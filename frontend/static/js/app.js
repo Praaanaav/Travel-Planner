@@ -1,5 +1,5 @@
 /* ============================================================
-   TravelBrain AI — frontend
+   TripPilot AI — frontend
    Talks to:  POST   /api/travel  { message, thread_id }
               GET    /api/config          credential status
               POST   /api/config          set session keys
@@ -11,50 +11,52 @@
 
   /* ---------------- dom ---------------- */
 
-  var $ = function (id) { return document.getElementById(id); };
+  var $ = function (id) {
+    return document.getElementById(id);
+  };
 
   var conversation = $("conversation");
-  var messages     = $("messages");
-  var hero         = $("hero");
-  var input        = $("input");
-  var composer     = $("composer");
-  var sendBtn      = $("sendBtn");
-  var builder      = $("builder");
-  var toastEl      = $("toast");
+  var messages = $("messages");
+  var hero = $("hero");
+  var input = $("input");
+  var composer = $("composer");
+  var sendBtn = $("sendBtn");
+  var builder = $("builder");
+  var toastEl = $("toast");
 
   var composerWrap = document.querySelector(".composer-wrap");
 
-  var statusBtn    = $("apiStatus");
-  var statusText   = statusBtn.querySelector(".status-text");
+  var statusBtn = $("apiStatus");
+  var statusText = statusBtn.querySelector(".status-text");
 
-  var setupGate    = $("setupGate");
-  var gateCreds    = $("gateCreds");
-  var gateSub      = $("gateSub");
-  var gateSave     = $("gateSave");
+  var setupGate = $("setupGate");
+  var gateCreds = $("gateCreds");
+  var gateSub = $("gateSub");
+  var gateSave = $("gateSave");
 
   var settingsModal = $("settingsModal");
   var settingsScrim = $("settingsScrim");
-  var credList      = $("credList");
-  var settingsSave  = $("settingsSave");
+  var credList = $("credList");
+  var settingsSave = $("settingsSave");
 
   /* ---------------- state ---------------- */
 
-  var THEME_KEY = "travelbrain.theme";
+  var THEME_KEY = "TripPilot.theme";
 
-  var threadId = null;   // LangGraph conversation thread for the current trip
+  var threadId = null; // LangGraph conversation thread for the current trip
   var busy = false;
-  var config = null;     // last /api/config payload
+  var config = null; // last /api/config payload
   var savingConfig = false;
 
   /* One bar, not five rows. The backend answers once at the end, so these
      weights are an estimate of how long each stage takes - the label is
      indicative, not a live event feed. */
   var PHASES = [
-    { label: "Fetching flights data",    weight: 0.22 },
-    { label: "Searching hotels",         weight: 0.18 },
-    { label: "Checking the weather",     weight: 0.14 },
-    { label: "Building your itinerary",  weight: 0.23 },
-    { label: "Writing your final plan",  weight: 0.23 }
+    { label: "Fetching flights data", weight: 0.22 },
+    { label: "Searching hotels", weight: 0.18 },
+    { label: "Checking the weather", weight: 0.14 },
+    { label: "Building your itinerary", weight: 0.23 },
+    { label: "Writing your final plan", weight: 0.23 },
   ];
 
   var ESTIMATED_MS = 55000;
@@ -87,17 +89,24 @@
   function toast(msg) {
     toastEl.textContent = msg;
     toastEl.hidden = false;
-    requestAnimationFrame(function () { toastEl.classList.add("show"); });
+    requestAnimationFrame(function () {
+      toastEl.classList.add("show");
+    });
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
       toastEl.classList.remove("show");
-      setTimeout(function () { toastEl.hidden = true; }, 250);
+      setTimeout(function () {
+        toastEl.hidden = true;
+      }, 250);
     }, 2800);
   }
 
   function scrollToEnd(smooth) {
     requestAnimationFrame(function () {
-      conversation.scrollTo({ top: conversation.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+      conversation.scrollTo({
+        top: conversation.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
     });
   }
 
@@ -105,15 +114,27 @@
 
   function initTheme() {
     var stored = null;
-    try { stored = localStorage.getItem(THEME_KEY); } catch (e) {}
-    var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-    document.documentElement.setAttribute("data-theme", stored || (prefersLight ? "light" : "dark"));
+    try {
+      stored = localStorage.getItem(THEME_KEY);
+    } catch (e) {}
+    var prefersLight =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: light)").matches;
+    document.documentElement.setAttribute(
+      "data-theme",
+      stored || (prefersLight ? "light" : "dark"),
+    );
   }
 
   $("themeToggle").addEventListener("click", function () {
-    var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    var next =
+      document.documentElement.getAttribute("data-theme") === "dark"
+        ? "light"
+        : "dark";
     document.documentElement.setAttribute("data-theme", next);
-    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch (e) {}
   });
 
   /* ============================================================
@@ -157,8 +178,11 @@
       });
 
       gateSub.textContent = labels.length
-        ? "The server has no " + joinAnd(labels) + " configured, so the agents cannot run. Add " +
-          (labels.length === 1 ? "it" : "them") + " below to start planning."
+        ? "The server has no " +
+          joinAnd(labels) +
+          " configured, so the agents cannot run. Add " +
+          (labels.length === 1 ? "it" : "them") +
+          " below to start planning."
         : "The server has no API keys configured, so the agents cannot run.";
 
       renderCreds(gateCreds);
@@ -184,7 +208,9 @@
 
   function refreshConfig() {
     return fetch("/api/config", { cache: "no-store" })
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)); })
+      .then(function (r) {
+        return r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status));
+      })
       .then(applyConfig)
       .catch(markUnreachable);
   }
@@ -209,11 +235,16 @@
       var head = el("div", "cred-head");
       head.appendChild(el("label", "cred-label", info.label));
 
-      var badgeText = info.source === "env" ? "From server .env"
-                    : info.source === "session" ? "Set for this session"
-                    : "Not configured";
+      var badgeText =
+        info.source === "env"
+          ? "From server .env"
+          : info.source === "session"
+            ? "Set for this session"
+            : "Not configured";
 
-      head.appendChild(el("span", "badge badge-" + (info.source || "missing"), badgeText));
+      head.appendChild(
+        el("span", "badge badge-" + (info.source || "missing"), badgeText),
+      );
       row.appendChild(head);
 
       row.appendChild(el("p", "cred-hint", info.hint));
@@ -221,7 +252,9 @@
       var field = el("div", "cred-field");
       var box = el("input", "cred-input");
       box.type = "password";
-      box.placeholder = info.configured ? "•••••••• (leave blank to keep)" : info.placeholder;
+      box.placeholder = info.configured
+        ? "•••••••• (leave blank to keep)"
+        : info.placeholder;
       box.autocomplete = "off";
       box.spellcheck = false;
       box.setAttribute("data-cred", name);
@@ -231,7 +264,9 @@
       reveal.type = "button";
       reveal.title = "Show / hide";
       reveal.setAttribute("aria-label", "Show or hide value");
-      reveal.appendChild(icon("M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"));
+      reveal.appendChild(
+        icon("M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"),
+      );
       reveal.addEventListener("click", function () {
         box.type = box.type === "password" ? "text" : "password";
       });
@@ -250,12 +285,12 @@
 
   var FIELD_BY_NAME = {
     GROQ_API_KEY: "groq_api_key",
-    DATABASE_URL: "database_url"
+    DATABASE_URL: "database_url",
   };
 
   var NAME_BY_FIELD = {
     groq_api_key: "GROQ_API_KEY",
-    database_url: "DATABASE_URL"
+    database_url: "DATABASE_URL",
   };
 
   function openSettings() {
@@ -275,7 +310,9 @@
 
   function setSavingConfig(state, button) {
     savingConfig = state;
-    [settingsSave, gateSave].forEach(function (b) { b.disabled = state; });
+    [settingsSave, gateSave].forEach(function (b) {
+      b.disabled = state;
+    });
     if (button) button.classList.toggle("is-busy", state);
   }
 
@@ -292,7 +329,9 @@
       payload[FIELD_BY_NAME[box.getAttribute("data-cred")]] = value;
     });
 
-    container.querySelectorAll(".cred-error").forEach(function (n) { n.hidden = true; });
+    container.querySelectorAll(".cred-error").forEach(function (n) {
+      n.hidden = true;
+    });
 
     if (!anything) {
       toast("Enter a key first.");
@@ -306,10 +345,12 @@
     fetch("/api/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     })
       .then(function (response) {
-        return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+        return response.json().then(function (data) {
+          return { ok: response.ok, data: data };
+        });
       })
       .then(function (out) {
         if (!out.ok || out.data.success === false) {
@@ -317,7 +358,9 @@
           var shown = 0;
 
           Object.keys(errors).forEach(function (field) {
-            var node = container.querySelector('[data-error-for="' + NAME_BY_FIELD[field] + '"]');
+            var node = container.querySelector(
+              '[data-error-for="' + NAME_BY_FIELD[field] + '"]',
+            );
             if (node) {
               node.textContent = errors[field];
               node.hidden = false;
@@ -325,7 +368,11 @@
             }
           });
 
-          toast(shown ? "Check the highlighted field." : (out.data.error || "Could not save."));
+          toast(
+            shown
+              ? "Check the highlighted field."
+              : out.data.error || "Could not save.",
+          );
           return;
         }
 
@@ -345,22 +392,32 @@
     setSavingConfig(true, settingsSave);
 
     fetch("/api/config", { method: "DELETE" })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        return r.json();
+      })
       .then(function (data) {
         applyConfig(data);
         renderCreds(credList);
         toast("Session keys cleared.");
       })
-      .catch(function () { toast("Could not reach the server."); })
-      .then(function () { setSavingConfig(false, settingsSave); });
+      .catch(function () {
+        toast("Could not reach the server.");
+      })
+      .then(function () {
+        setSavingConfig(false, settingsSave);
+      });
   }
 
   $("settingsBtn").addEventListener("click", openSettings);
   statusBtn.addEventListener("click", openSettings);
   $("settingsClose").addEventListener("click", closeSettings);
   settingsScrim.addEventListener("click", closeSettings);
-  settingsSave.addEventListener("click", function () { saveCredentials(credList, settingsSave); });
-  gateSave.addEventListener("click", function () { saveCredentials(gateCreds, gateSave); });
+  settingsSave.addEventListener("click", function () {
+    saveCredentials(credList, settingsSave);
+  });
+  gateSave.addEventListener("click", function () {
+    saveCredentials(gateCreds, gateSave);
+  });
   $("settingsReset").addEventListener("click", resetSettings);
 
   document.addEventListener("keydown", function (e) {
@@ -384,7 +441,8 @@
   function toText(value) {
     if (value === null || value === undefined) return "";
     if (typeof value === "string") return value;
-    if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (typeof value === "number" || typeof value === "boolean")
+      return String(value);
 
     if (Array.isArray(value)) {
       return value.map(toText).filter(Boolean).join("\n\n");
@@ -412,8 +470,14 @@
 
     if (!text) {
       var empty = el("div", "md-empty");
-      empty.appendChild(icon("M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"));
-      empty.appendChild(el("span", null, emptyText || "No data returned for this section."));
+      empty.appendChild(
+        icon(
+          "M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
+        ),
+      );
+      empty.appendChild(
+        el("span", null, emptyText || "No data returned for this section."),
+      );
       box.appendChild(empty);
       return box;
     }
@@ -433,7 +497,11 @@
   }
 
   function plainTextOf(result) {
-    return ["# " + (result.__query || "Trip plan"), "", toText(result.answer)].join("\n");
+    return [
+      "# " + (result.__query || "Trip plan"),
+      "",
+      toText(result.answer),
+    ].join("\n");
   }
 
   function renderResult(result) {
@@ -442,43 +510,73 @@
     /* head */
     var head = el("div", "card-head");
     var avatar = el("div", "card-avatar");
-    avatar.appendChild(icon("M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2a.8.8 0 0 0-.8 1.3L8 11l-2 2-2.2-.5a.6.6 0 0 0-.6 1L5 16l2.5 1.8a.6.6 0 0 0 1-.6L8 15l2-2 3.5 4a.8.8 0 0 0 1.3-.8Z"));
+    avatar.appendChild(
+      icon(
+        "M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2a.8.8 0 0 0-.8 1.3L8 11l-2 2-2.2-.5a.6.6 0 0 0-.6 1L5 16l2.5 1.8a.6.6 0 0 0 1-.6L8 15l2-2 3.5 4a.8.8 0 0 0 1.3-.8Z",
+      ),
+    );
     head.appendChild(avatar);
 
     var titleBox = el("div", "card-title");
-    titleBox.appendChild(el("strong", null, "TravelBrain AI"));
+    titleBox.appendChild(el("strong", null, "TripPilot AI"));
     titleBox.appendChild(el("small", null, "Plan ready"));
     head.appendChild(titleBox);
 
     var tools = el("div", "card-tools");
 
-    tools.appendChild(toolButton("Copy plan", "M8 4h10a2 2 0 0 1 2 2v10M16 8H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Z", function () {
-      var text = plainTextOf(result);
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(
-          function () { toast("Plan copied to clipboard"); },
-          function () { toast("Could not copy"); }
-        );
-      } else {
-        toast("Clipboard not available");
-      }
-    }));
+    tools.appendChild(
+      toolButton(
+        "Copy plan",
+        "M8 4h10a2 2 0 0 1 2 2v10M16 8H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2Z",
+        function () {
+          var text = plainTextOf(result);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(
+              function () {
+                toast("Plan copied to clipboard");
+              },
+              function () {
+                toast("Could not copy");
+              },
+            );
+          } else {
+            toast("Clipboard not available");
+          }
+        },
+      ),
+    );
 
-    tools.appendChild(toolButton("Download as Markdown", "M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2", function () {
-      var blob = new Blob([plainTextOf(result)], { type: "text/markdown;charset=utf-8" });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = "travelbrain-plan.md";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    }));
+    tools.appendChild(
+      toolButton(
+        "Download as Markdown",
+        "M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",
+        function () {
+          var blob = new Blob([plainTextOf(result)], {
+            type: "text/markdown;charset=utf-8",
+          });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "TripPilot-plan.md";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 1000);
+        },
+      ),
+    );
 
-    tools.appendChild(toolButton("Print", "M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v7H6z", function () {
-      window.print();
-    }));
+    tools.appendChild(
+      toolButton(
+        "Print",
+        "M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v7H6z",
+        function () {
+          window.print();
+        },
+      ),
+    );
 
     head.appendChild(tools);
     card.appendChild(head);
@@ -487,7 +585,9 @@
        weather and itinerary payloads still come back in the response and
        feed this answer, they are just not surfaced as separate tabs. */
     var body = el("div", "card-body");
-    body.appendChild(mdBlock(result.answer, "The agent returned an empty response."));
+    body.appendChild(
+      mdBlock(result.answer, "The agent returned an empty response."),
+    );
     card.appendChild(body);
 
     var wrap = el("div", "msg");
@@ -499,25 +599,34 @@
   function renderError(message, kind) {
     var card = el("article", "card error-card");
     var body = el("div", "error-body");
-    body.appendChild(icon("M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z", "error-ico"));
+    body.appendChild(
+      icon(
+        "M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",
+        "error-ico",
+      ),
+    );
 
     var copy = {
       server: {
         title: "The planner could not finish",
-        detail: "The request reached the server but the agent run failed. Check the uvicorn console for the full traceback."
+        detail:
+          "The request reached the server but the agent run failed. Check the uvicorn console for the full traceback.",
       },
       network: {
         title: "Could not reach the server",
-        detail: "The request never completed. Check that the server is still running."
+        detail:
+          "The request never completed. Check that the server is still running.",
       },
       render: {
         title: "The plan came back, but could not be displayed",
-        detail: "The agents returned data in an unexpected shape. This is a frontend issue, not an agent failure."
+        detail:
+          "The agents returned data in an unexpected shape. This is a frontend issue, not an agent failure.",
       },
       setup: {
         title: "Missing credentials",
-        detail: "Add the required keys in Settings, or set them in the server's .env file."
-      }
+        detail:
+          "Add the required keys in Settings, or set them in the server's .env file.",
+      },
     }[kind || "server"];
 
     var textBox = el("div");
@@ -584,7 +693,10 @@
       var index = PHASES.length - 1;
       for (var i = 0; i < PHASES.length; i++) {
         acc += PHASES[i].weight;
-        if (ratio < acc) { index = i; break; }
+        if (ratio < acc) {
+          index = i;
+          break;
+        }
       }
 
       if (index !== currentPhase) {
@@ -602,7 +714,7 @@
         clearInterval(interval);
         fill.style.width = "100%";
         pct.textContent = "100%";
-      }
+      },
     };
   }
 
@@ -638,18 +750,27 @@
     fetch("/api/travel", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message, thread_id: threadId })
+      body: JSON.stringify({ message: message, thread_id: threadId }),
     })
       .catch(function (e) {
         e.__kind = "network";
         throw e;
       })
       .then(function (response) {
-        return response.json()
-          .catch(function () { throw new Error("Server returned a non-JSON response (HTTP " + response.status + ")"); })
+        return response
+          .json()
+          .catch(function () {
+            throw new Error(
+              "Server returned a non-JSON response (HTTP " +
+                response.status +
+                ")",
+            );
+          })
           .then(function (data) {
             if (!response.ok || data.success === false) {
-              var err = new Error(data.error || ("Request failed with HTTP " + response.status));
+              var err = new Error(
+                data.error || "Request failed with HTTP " + response.status,
+              );
               // 428 Precondition Required = a credential is missing.
               if (response.status === 428) err.__kind = "setup";
               throw err;
@@ -690,7 +811,10 @@
   /* ---------------- trips ---------------- */
 
   function startNewTrip() {
-    if (busy) { toast("Wait for the current plan to finish."); return; }
+    if (busy) {
+      toast("Wait for the current plan to finish.");
+      return;
+    }
     threadId = null;
     messages.innerHTML = "";
     updateEmptyState();
@@ -738,21 +862,29 @@
   });
 
   document.querySelectorAll("#interestChips .chip").forEach(function (chip) {
-    chip.addEventListener("click", function () { chip.classList.toggle("on"); });
+    chip.addEventListener("click", function () {
+      chip.classList.toggle("on");
+    });
   });
 
   $("builderClear").addEventListener("click", function () {
-    ["fFrom", "fTo", "fDate", "fDays", "fPeople", "fBudget"].forEach(function (id) { $(id).value = ""; });
-    document.querySelectorAll("#interestChips .chip").forEach(function (c) { c.classList.remove("on"); });
+    ["fFrom", "fTo", "fDate", "fDays", "fPeople", "fBudget"].forEach(
+      function (id) {
+        $(id).value = "";
+      },
+    );
+    document.querySelectorAll("#interestChips .chip").forEach(function (c) {
+      c.classList.remove("on");
+    });
   });
 
   $("builderApply").addEventListener("click", function () {
-    var from    = $("fFrom").value.trim();
-    var to      = $("fTo").value.trim();
-    var date    = $("fDate").value;
-    var days    = $("fDays").value.trim();
-    var people  = $("fPeople").value.trim();
-    var budget  = $("fBudget").value.trim();
+    var from = $("fFrom").value.trim();
+    var to = $("fTo").value.trim();
+    var date = $("fDate").value;
+    var days = $("fDays").value.trim();
+    var people = $("fPeople").value.trim();
+    var budget = $("fBudget").value.trim();
 
     var interests = [];
     document.querySelectorAll("#interestChips .chip.on").forEach(function (c) {
@@ -773,15 +905,27 @@
     if (date) {
       var d = new Date(date + "T00:00:00");
       if (!isNaN(d)) {
-        parts.push("departing " + d.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }));
+        parts.push(
+          "departing " +
+            d.toLocaleDateString(undefined, {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            }),
+        );
       }
     }
 
-    if (people) parts.push("for " + people + (people === "1" ? " traveller" : " travellers"));
+    if (people)
+      parts.push(
+        "for " + people + (people === "1" ? " traveller" : " travellers"),
+      );
     if (budget) parts.push("with a budget of " + budget);
     if (interests.length) parts.push("focused on " + interests.join(", "));
 
-    var sentence = parts.join(" ") + ". Find flights, hotels, the weather outlook and a day-by-day itinerary.";
+    var sentence =
+      parts.join(" ") +
+      ". Find flights, hotels, the weather outlook and a day-by-day itinerary.";
 
     input.value = sentence;
     autosize();
