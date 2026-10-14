@@ -1,4 +1,4 @@
-```
+
 <h1 align="center">✈️ TripPilot</h1>
 
 <p align="center">
@@ -21,7 +21,7 @@
   </a>
 </p>
 
----
+
 
 ## 📸 Demo & Screenshots
 
