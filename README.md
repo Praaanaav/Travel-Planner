@@ -522,78 +522,6 @@ Total                 ~₹1,52,000
 • Apply for a Schengen visa early — processing takes 3–4 weeks.
 • Carry an EU travel adapter. Most restaurants accept card payments.
 ```
-
----
-
-## 🔧 Troubleshooting
-
-<details>
-<summary><b>The page loads but planning fails</b></summary>
-
-Check the status indicator at the bottom of the sidebar. If it shows *API unreachable*, restart the server:
-
-```bash
-uv run python app.py
-```
-
-Otherwise, check the terminal for the full error traceback.
-</details>
-
-<details>
-<summary><b>"Model does not exist" error</b></summary>
-
-Groq retires models over time. List models available to your key:
-
-```bash
-curl -s https://api.groq.com/openai/v1/models \
-  -H "Authorization: Bearer $GROQ_API_KEY"
-```
-
-Pick a current model ID from the list and set `GROQ_MODEL=<id>` in your `.env`.
-</details>
-
-<details>
-<summary><b>"DATABASE_URL is missing" error</b></summary>
-
-Add a valid PostgreSQL connection string to your `.env`:
-
-```dotenv
-DATABASE_URL=postgresql://user:password@host:5432/dbname
-```
-
-A free [Render](https://render.com/) Postgres database works perfectly.
-</details>
-
-<details>
-<summary><b>Plans take longer than 90 seconds</b></summary>
-
-Enable Redis caching to speed up repeated queries. Airport/airline data, hotel searches, and weather are cached with configurable TTLs:
-
-```dotenv
-REDIS_URL=redis://localhost:6379/0
-CACHE_ENABLED=true
-```
-</details>
-
-<details>
-<summary><b>Claude Code still asks to log in to Anthropic</b></summary>
-
-If you are also using Claude Code with OpenRouter on this machine, make sure `ANTHROPIC_API_KEY` is set to an empty string `""` (not missing, not null) in `~/.claude/settings.json`.
-</details>
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome. This project is actively developed.
-
-1. **Fork** the repository and clone your fork
-2. Follow [Installation & Setup](#-installation--setup) to get running locally
-3. Create a branch: `git checkout -b feature/your-feature-name`
-4. Keep each pull request focused on a single change
-5. Check the app still runs end to end before opening a PR
-6. **Never** commit `.env` or any API keys
-
 ---
 
 ## 🎉 Acknowledgements
@@ -607,7 +535,7 @@ Contributions are welcome. This project is actively developed.
 
 ---
 
-## 👤 Author & Contact
+## 👤 Author
 
 **Pranav Kumar Swain**
 
