@@ -21,14 +21,12 @@
   </a>
 </p>
 
-
-
 ## 📸 Demo & Screenshots
 
 > **Live:** Run `uv run python app.py` then open **http://127.0.0.1:8000**
 
-| Home Screen | Trip Results |
-|:-----------:|:------------:|
+|           Home Screen           |                           Trip Results                           |
+| :------------------------------: | :---------------------------------------------------------------: |
 | Enter your trip in plain English | Tabbed results: Plan · Itinerary · Flights · Hotels · Weather |
 
 **Example prompts to try:**
@@ -42,14 +40,14 @@
 ## 📝 Table of Contents
 
 - [Overview](#-overview)
-- [Problem Statement & Solution](#-problem-statement--solution)
+- [Problem Statement &amp; Solution](#-problem-statement--solution)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [System Architecture](#-system-architecture)
 - [How It Works — Agent Workflow](#-how-it-works--agent-workflow)
 - [Project Structure](#-project-structure)
 - [Prerequisites](#-prerequisites)
-- [Installation & Setup](#-installation--setup)
+- [Installation &amp; Setup](#-installation--setup)
 - [Environment Variables](#-environment-variables)
 - [Usage](#-usage)
 - [API Documentation](#-api-documentation)
@@ -57,7 +55,7 @@
 - [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
 - [Acknowledgements](#-acknowledgements)
-- [Author & Contact](#-author--contact)
+- [Author &amp; Contact](#-author--contact)
 
 ---
 
@@ -65,13 +63,13 @@
 
 **TripPilot** is a full-stack, multi-agent AI travel planner that turns a single natural-language request into a complete, actionable travel plan. A team of specialised AI agents — each with access to live data APIs — research and compile your trip, then a final agent assembles everything into a clean, structured report.
 
-| Agent | What it delivers |
-|-------|-----------------|
-| ✈️ **Flight Agent** | Departure/arrival airports, airlines, typical duration, fare ranges, booking advice |
-| 🏨 **Hotel Agent** | Accommodation options matched to your destination and budget via Tavily search |
-| 🌤️ **Weather Agent** | Current conditions, multi-day forecast, and weather-based travel advice |
-| 🗺️ **Itinerary Agent** | A realistic, day-by-day schedule combining all gathered data |
-| 📋 **Final Agent** | A beautifully formatted, consolidated travel report with budget breakdown |
+| Agent                          | What it delivers                                                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| ✈️ **Flight Agent**    | Departure/arrival airports, airlines, typical duration, fare ranges, booking advice |
+| 🏨 **Hotel Agent**       | Accommodation options matched to your destination and budget via Tavily search      |
+| 🌤️ **Weather Agent**   | Current conditions, multi-day forecast, and weather-based travel advice             |
+| 🗺️ **Itinerary Agent** | A realistic, day-by-day schedule combining all gathered data                        |
+| 📋 **Final Agent**       | A beautifully formatted, consolidated travel report with budget breakdown           |
 
 Trips are persisted to PostgreSQL via LangGraph's checkpointing — reopen a conversation later and ask follow-up questions without starting over.
 
@@ -111,20 +109,20 @@ You describe the trip the way you'd describe it to a friend, and TripPilot handl
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Backend** | [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/) |
-| **AI Orchestration** | [LangGraph](https://langchain-ai.github.io/langgraph/) (StateGraph) |
-| **LLM** | [Groq](https://groq.com/) (`langchain-groq`) — fast inference |
-| **Agent Tools** | [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) via `langchain-mcp-adapters` |
-| **Flight Data** | [AviationStack](https://aviationstack.com/) (local stdio MCP server) |
-| **Hotel Search** | [Tavily](https://tavily.com/) (remote HTTP MCP server) |
-| **Weather Data** | [OpenWeatherMap](https://openweathermap.org/api) (local weather MCP server) |
-| **Persistence** | [PostgreSQL](https://www.postgresql.org/) + `langgraph-checkpoint-postgres` |
-| **Caching** | [Redis](https://redis.io/) (optional, graceful fallback if unavailable) |
-| **Frontend** | HTML + Vanilla JS + Jinja2 Templates |
-| **Package Manager** | [uv](https://docs.astral.sh/uv/) |
-| **Runtime** | Python 3.11 |
+| Layer                      | Technology                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Backend**          | [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/)                   |
+| **AI Orchestration** | [LangGraph](https://langchain-ai.github.io/langgraph/) (StateGraph)                             |
+| **LLM**              | [Groq](https://groq.com/) (`langchain-groq`) — fast inference                                |
+| **Agent Tools**      | [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) via `langchain-mcp-adapters` |
+| **Flight Data**      | [AviationStack](https://aviationstack.com/) (local stdio MCP server)                            |
+| **Hotel Search**     | [Tavily](https://tavily.com/) (remote HTTP MCP server)                                          |
+| **Weather Data**     | [OpenWeatherMap](https://openweathermap.org/api) (local weather MCP server)                     |
+| **Persistence**      | [PostgreSQL](https://www.postgresql.org/) + `langgraph-checkpoint-postgres`                   |
+| **Caching**          | [Redis](https://redis.io/) (optional, graceful fallback if unavailable)                         |
+| **Frontend**         | HTML + Vanilla JS + Jinja2 Templates                                                           |
+| **Package Manager**  | [uv](https://docs.astral.sh/uv/)                                                                |
+| **Runtime**          | Python 3.11                                                                                    |
 
 ---
 
@@ -215,15 +213,15 @@ START
 
 **Shared `TravelState` passed between all agents:**
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `user_query` | `str` | Original natural-language request |
-| `messages` | `list[AnyMessage]` | Conversation history (append-only) |
-| `flight_results` | `str` | Output from Flight Agent |
-| `hotel_results` | `str` | Output from Hotel Agent |
-| `weather_results` | `str` | Output from Weather Agent |
-| `itinerary` | `str` | Output from Itinerary Agent |
-| `llm_calls` | `int` | Running count of LLM invocations |
+| Field               | Type                 | Description                        |
+| ------------------- | -------------------- | ---------------------------------- |
+| `user_query`      | `str`              | Original natural-language request  |
+| `messages`        | `list[AnyMessage]` | Conversation history (append-only) |
+| `flight_results`  | `str`              | Output from Flight Agent           |
+| `hotel_results`   | `str`              | Output from Hotel Agent            |
+| `weather_results` | `str`              | Output from Weather Agent          |
+| `itinerary`       | `str`              | Output from Itinerary Agent        |
+| `llm_calls`       | `int`              | Running count of LLM invocations   |
 
 ---
 
@@ -292,17 +290,15 @@ TripPilot-Multi-Agent-AI-Travel-Planner/
   ```bash
   pip install uv
   ```
-
 - **A PostgreSQL database** — a free [Render](https://render.com/) Postgres instance works perfectly
 - **API keys** from the services below (all have free tiers):
 
-  | Service | Free Tier | Sign Up |
-  |---------|:---------:|---------|
-  | [Groq](https://console.groq.com/) | ✅ Generous free quota | console.groq.com |
-  | [Tavily](https://tavily.com/) | ✅ 1,000 searches/month | tavily.com |
-  | [AviationStack](https://aviationstack.com/) | ✅ 500 requests/month | aviationstack.com |
-  | [OpenWeatherMap](https://openweathermap.org/api) | ✅ 60 calls/min | openweathermap.org |
-
+  | Service                                         |        Free Tier        | Sign Up            |
+  | ----------------------------------------------- | :---------------------: | ------------------ |
+  | [Groq](https://console.groq.com/)                | ✅ Generous free quota | console.groq.com   |
+  | [Tavily](https://tavily.com/)                    | ✅ 1,000 searches/month | tavily.com         |
+  | [AviationStack](https://aviationstack.com/)      |  ✅ 500 requests/month  | aviationstack.com  |
+  | [OpenWeatherMap](https://openweathermap.org/api) |     ✅ 60 calls/min     | openweathermap.org |
 - **Redis** *(optional)* — only for caching; the app works fine without it
 
 ---
@@ -388,19 +384,19 @@ LANGFUSE_BASE_URL=
 
 ### Variable Reference
 
-| Variable | Required | Purpose |
-|----------|:--------:|---------|
-| `GROQ_API_KEY` | ✅ | Powers all AI agents (LLM inference via Groq) |
-| `DATABASE_URL` | ✅ | PostgreSQL connection string — persists trip history |
-| `TAVILY_API_KEY` | ✅ | Hotel search and web research |
-| `AVIATIONSTACK_API_KEY` | ✅ | Airport and airline data |
-| `OPENWEATHER_API_KEY` | ✅ | Current weather and forecasts |
-| `GROQ_MODEL` | ❌ | Override the default Groq model |
-| `REDIS_URL` | ❌ | Redis connection for API response caching |
-| `CACHE_ENABLED` | ❌ | Set `false` to disable caching entirely |
-| `HOST` / `PORT` | ❌ | Server bind address (default: `127.0.0.1:8000`) |
-| `RELOAD` | ❌ | Auto-reload on file changes (dev only, default: `true`) |
-| `LANGFUSE_*` | ❌ | LLM observability via Langfuse |
+| Variable                  | Required | Purpose                                                   |
+| ------------------------- | :------: | --------------------------------------------------------- |
+| `GROQ_API_KEY`          |    ✅    | Powers all AI agents (LLM inference via Groq)             |
+| `DATABASE_URL`          |    ✅    | PostgreSQL connection string — persists trip history     |
+| `TAVILY_API_KEY`        |    ✅    | Hotel search and web research                             |
+| `AVIATIONSTACK_API_KEY` |    ✅    | Airport and airline data                                  |
+| `OPENWEATHER_API_KEY`   |    ✅    | Current weather and forecasts                             |
+| `GROQ_MODEL`            |    ❌    | Override the default Groq model                           |
+| `REDIS_URL`             |    ❌    | Redis connection for API response caching                 |
+| `CACHE_ENABLED`         |    ❌    | Set `false` to disable caching entirely                 |
+| `HOST` / `PORT`       |    ❌    | Server bind address (default: `127.0.0.1:8000`)         |
+| `RELOAD`                |    ❌    | Auto-reload on file changes (dev only, default: `true`) |
+| `LANGFUSE_*`            |    ❌    | LLM observability via Langfuse                            |
 
 > ⚠️ `.env` is listed in `.gitignore`. **Never commit API keys to version control.**
 
@@ -415,9 +411,11 @@ Type into the box at the bottom of the screen and press **Enter**:
 ```
 Plan a 10-day Europe trip from India in April, mid-range budget
 ```
+
 ```
 Relaxed 5-day trip to Rome and Florence in September for two people
 ```
+
 ```
 Budget honeymoon to Bali for 7 days departing from Mumbai in December
 ```
@@ -443,13 +441,13 @@ Press **Write my prompt** — TripPilot composes the natural-language request fo
 
 Results are split into tabs so you can jump straight to what you need:
 
-| Tab | Contents |
-|-----|----------|
-| **Plan** | Full AI-generated narrative summary |
-| **Itinerary** | Day-by-day schedule |
-| **Flights** | Airports, airlines, durations, fare estimates |
-| **Hotels** | Accommodation options and recommendations |
-| **Weather** | Conditions, forecast, weather-based travel advice |
+| Tab                 | Contents                                          |
+| ------------------- | ------------------------------------------------- |
+| **Plan**      | Full AI-generated narrative summary               |
+| **Itinerary** | Day-by-day schedule                               |
+| **Flights**   | Airports, airlines, durations, fare estimates     |
+| **Hotels**    | Accommodation options and recommendations         |
+| **Weather**   | Conditions, forecast, weather-based travel advice |
 
 ### Saving, exporting and revisiting
 
@@ -466,6 +464,7 @@ Results are split into tabs so you can jump straight to what you need:
 ## 📋 Example Output
 
 **Input prompt:**
+
 > *"Plan a 10-day Europe trip from India in April, mid-range budget"*
 
 **Condensed output:**
@@ -522,6 +521,7 @@ Total                 ~₹1,52,000
 • Apply for a Schengen visa early — processing takes 3–4 weeks.
 • Carry an EU travel adapter. Most restaurants accept card payments.
 ```
+
 ---
 
 ## 🎉 Acknowledgements
@@ -538,4 +538,3 @@ Total                 ~₹1,52,000
 ## 👤 Author
 
 **Pranav Kumar Swain**
-

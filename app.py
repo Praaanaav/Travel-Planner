@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+# pyrefly: ignore [missing-import]
 from src.api.sessions import (
     SESSION_COOKIE,
     SESSION_TTL_SECONDS,
@@ -18,14 +19,19 @@ from src.api.sessions import (
     new_session_id,
     store_credentials,
 )
+# pyrefly: ignore [missing-import]
 from src.api.validation import check_database_url, check_groq_api_key
+# pyrefly: ignore [missing-import]
 from src.clients import cache
+# pyrefly: ignore [missing-import]
 from src.config.session import (
     MissingCredentialsError,
     credential_status,
     use_credentials,
 )
+# pyrefly: ignore [missing-import]
 from src.config.settings import COOKIE_SAMESITE, COOKIE_SECURE, CORS_ORIGINS
+# pyrefly: ignore [missing-import]
 from src.graph.runner import run_travel_agent
 
 # This is to allow nested event loops for async calls in FastAPI
@@ -273,11 +279,9 @@ async def favicon():
 
 
 if __name__ == "__main__":
-    # Defaults suit local development. In Docker, HOST is set to 0.0.0.0
-    # so the port is reachable from outside the container.
     uvicorn.run(
         "app:app",
-        host=os.getenv("HOST", "127.0.0.1"),
-        port=int(os.getenv("PORT", "8000")),
-        reload=os.getenv("RELOAD", "true").lower() not in ("false", "0", "no")
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "10000")),
+        reload=False,
     )
